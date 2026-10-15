@@ -1,0 +1,8 @@
+preparation:
+  test_size: 0.25      # part des donnees reservee a l'evaluation
+  random_state: 42     # graine du decoupage
+entrainement:
+  n_estimators: 300    # nombre d'arbres
+  max_depth: 12        # profondeur maximale
+validation:
+  seuil_f1: 0.82       # sous ce seuil, le modele est refuse
