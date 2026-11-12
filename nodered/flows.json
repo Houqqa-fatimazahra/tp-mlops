@@ -1,0 +1,331 @@
+[
+    {
+        "id": "tab_reentrainer",
+        "type": "tab",
+        "label": "RÃ©entraÃ®ner d'un clic",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "f1_inject",
+        "type": "inject",
+        "z": "tab_reentrainer",
+        "name": "Lancer le rÃ©entraÃ®nement",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "{}",
+        "payloadType": "json",
+        "x": 170,
+        "y": 120,
+        "wires": [
+            [
+                "f1_http"
+            ]
+        ]
+    },
+    {
+        "id": "f1_http",
+        "type": "http request",
+        "z": "tab_reentrainer",
+        "name": "Prefect : crÃ©er une exÃ©cution",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://127.0.0.1:4200/api/deployments/d8f39674-0507-46eb-91f1-20cd966a24f8/create_flow_run",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 340,
+        "y": 180,
+        "wires": [
+            [
+                "f1_resume"
+            ]
+        ]
+    },
+    {
+        "id": "f1_resume",
+        "type": "change",
+        "z": "tab_reentrainer",
+        "name": "RÃ©sumÃ©",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "'ExÃ©cution ' & payload.name & ' crÃ©Ã©e, Ã©tat : ' & payload.state.name",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 520,
+        "y": 120,
+        "wires": [
+            [
+                "f1_debug"
+            ]
+        ]
+    },
+    {
+        "id": "f1_debug",
+        "type": "debug",
+        "z": "tab_reentrainer",
+        "name": "RÃ©ponse de Prefect",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "payload",
+        "statusType": "auto",
+        "x": 700,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "tab_surveiller",
+        "type": "tab",
+        "label": "Surveiller le modÃ¨le",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "f2_inject",
+        "type": "inject",
+        "z": "tab_surveiller",
+        "name": "Toutes les 10 s",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "10",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "{\"dataframe_records\":[{\"montant\":8500.0,\"anciennete\":3,\"freq_24h\":9,\"nuit\":1}]}",
+        "payloadType": "json",
+        "x": 150,
+        "y": 120,
+        "wires": [
+            [
+                "f2_http"
+            ]
+        ]
+    },
+    {
+        "id": "f2_http",
+        "type": "http request",
+        "z": "tab_surveiller",
+        "name": "ModÃ¨le : /invocations",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://127.0.0.1:8101/invocations",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 340,
+        "y": 120,
+        "wires": [
+            [
+                "f2_switch"
+            ]
+        ]
+    },
+    {
+        "id": "f2_switch",
+        "type": "switch",
+        "z": "tab_surveiller",
+        "name": "Fraude prÃ©dite ?",
+        "property": "payload.predictions[0]",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "1",
+                "vt": "num"
+            },
+            {
+                "t": "eq",
+                "v": "0",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 530,
+        "y": 120,
+        "wires": [
+            [
+                "f2_msg"
+            ],
+            [
+                "f2_normal"
+            ]
+        ]
+    },
+    {
+        "id": "f2_msg",
+        "type": "change",
+        "z": "tab_surveiller",
+        "name": "Message d'alerte",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "Transaction suspecte : 8500 MAD la nuit",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 720,
+        "y": 80,
+        "wires": [
+            [
+                "f2_alerte"
+            ]
+        ]
+    },
+    {
+        "id": "f2_alerte",
+        "type": "debug",
+        "z": "tab_surveiller",
+        "name": "Alerte fraude",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "payload",
+        "statusType": "auto",
+        "x": 900,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "f2_normal",
+        "type": "debug",
+        "z": "tab_surveiller",
+        "name": "Transaction normale",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "payload",
+        "statusType": "auto",
+        "x": 730,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "f2_catch",
+        "type": "catch",
+        "z": "tab_surveiller",
+        "name": "Erreur d'appel",
+        "scope": [
+            "f2_http"
+        ],
+        "uncaught": false,
+        "x": 150,
+        "y": 260,
+        "wires": [
+            [
+                "f2_horo"
+            ]
+        ]
+    },
+    {
+        "id": "f2_horo",
+        "type": "change",
+        "z": "tab_surveiller",
+        "name": "Horodater l'incident",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "$now() & ' ALERTE service du modele indisponible : ' & error.message",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 340,
+        "y": 260,
+        "wires": [
+            [
+                "f2_alerte_service",
+                "f2_file"
+            ]
+        ]
+    },
+    {
+        "id": "f2_alerte_service",
+        "type": "debug",
+        "z": "tab_surveiller",
+        "name": "Alerte service",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "payload",
+        "statusType": "auto",
+        "x": 560,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "f2_file",
+        "type": "file",
+        "z": "tab_surveiller",
+        "name": "reports/alertes.log",
+        "filename": "C:\\Users\\fatim\\tp-mlops\\reports\\alertes.log",
+        "filenameType": "str",
+        "appendNewline": true,
+        "createDir": true,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 570,
+        "y": 300,
+        "wires": [
+            []
+        ]
+    }
+]
