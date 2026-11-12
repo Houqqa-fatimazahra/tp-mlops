@@ -1,0 +1,104 @@
+﻿===== python src/xai_importance.py =====
+P(fraude) Mme Benali : 0.8899
+            MDI (foret)  permutation  ecart-type
+montant           0.480        0.591       0.032
+freq_24h          0.191        0.265       0.022
+anciennete        0.236        0.263       0.029
+nuit              0.093        0.193       0.016
+===== python src/xai_pdp.py =====
+montant     PDP de 0.004 a 0.447
+anciennete  PDP de 0.033 a 0.239
+===== python src/xai_local.py =====
+moyenne du modele : 0.1153
+nuit        +0.3677
+montant     +0.3555
+anciennete  +0.0798
+freq_24h    -0.0284
+somme : 0.8899
+prediction : 0.8899
+===== python src/xai_global.py =====
+montant       0.1155
+anciennete    0.0578
+nuit          0.0572
+freq_24h      0.0555
+graphiques ecrits
+===== python src/xai_lime.py =====
+regles : ['montant > 1007.36', 'nuit > 0.00', '29.00 < anciennete <= 60.00', '3.00 < freq_24h <= 4.00']
+--- 500 voisins montant nuit anciennete freq_24h
+graine 0 +0.459 +0.244 -0.007 -0.035
+graine 1 +0.499 +0.245 +0.060 -0.018
+graine 2 +0.406 +0.208 +0.002 -0.021
+graine 3 +0.384 +0.192 +0.015 -0.028
+graine 4 +0.479 +0.189 -0.005 -0.035
+--- 2000 voisins montant nuit anciennete freq_24h
+graine 0 +0.483 +0.182 +0.026 +0.001
+graine 1 +0.429 +0.236 +0.032 -0.037
+graine 2 +0.440 +0.180 +0.025 +0.012
+graine 3 +0.455 +0.205 +0.020 -0.016
+graine 4 +0.455 +0.228 +0.034 -0.003
+===== python src/contrefactuel.py =====
+situation reelle : P = 0.89
+meme paiement de jour : P = 0.098
+montant <= 530 MAD : P = 0.415
+anciennete >= 92 mois : P = 0.397
+===== python src/fuite.py =====
+F1 avec la colonne : 0.9323
+statut_enquete    0.754
+montant           0.285
+nuit              0.056
+anciennete        0.046
+freq_24h          0.045
+modele et donnees avec fuite ecrits
+===== python src/lisibles.py =====
+logistique, montant brut F1 = 0.7407
+logistique, log(montant) F1 = 0.8593
+coefficients standardises : {'anciennete': -2.58, 'freq_24h': 2.75, 'nuit': 2.23, 'log_montant': 4.93}
+cote x 0.928 par mois d'anciennete ; x 4.76 par transaction en 24 h
+arbre profondeur 2   :   4 feuilles, F1 = 0.2293
+arbre profondeur 3   :   8 feuilles, F1 = 0.5737
+arbre profondeur 4   :  16 feuilles, F1 = 0.6063
+arbre profondeur 6   :  50 feuilles, F1 = 0.7510
+arbre profondeur None: 206 feuilles, F1 = 0.7556
+|--- montant <= 1505.7
+|   |--- freq_24h <= 6.5
+|   |   |--- nuit <= 0.5
+|   |   |   |--- class: 0
+|   |   |--- nuit >  0.5
+|   |   |   |--- class: 0
+|   |--- freq_24h >  6.5
+|   |   |--- montant <= 371.9
+|   |   |   |--- class: 0
+|   |   |--- montant >  371.9
+|   |   |   |--- class: 0
+|--- montant >  1505.7
+|   |--- nuit <= 0.5
+|   |   |--- anciennete <= 69.5
+|   |   |   |--- class: 1
+|   |   |--- anciennete >  69.5
+|   |   |   |--- class: 0
+|   |--- nuit >  0.5
+|   |   |--- anciennete <= 64.0
+|   |   |   |--- class: 1
+|   |   |--- anciennete >  64.0
+|   |   |   |--- class: 1
+
+Mme Benali : feuille 13 | P = 0.983
+foret : F1 = 0.8636
+===== python src/ebm_monotonie.py =====
+EBM F1 = 0.8538
+Mme Benali : {'montant': 5.68, 'anciennete': 1.74, 'freq_24h': 0.04, 'nuit': 4.36} + constante -7.71 -> P = 0.984
+boosting sans contrainte  F1 = 0.8390
+boosting avec contrainte  F1 = 0.8527
+substitut prof. 3 : accord 92.1%, accord sur les fraudes de la foret 56.9%
+substitut prof. 5 : accord 95.4%, accord sur les fraudes de la foret 74.6%
+===== python src/equite.py =====
+        taux_alerte  fausses_alertes  rappel
+groupe                                      
+A            0.0783           0.0108  0.8462
+B            0.1506           0.0213  0.8551
+taux reel de fraude : {'A': 0.0807, 'B': 0.1551}
+ecart entre groupes : {'taux_alerte': 0.0723, 'fausses_alertes': 0.0105, 'rappel': 0.0089}
+===== python src/journaliser.py =====
+🏃 View run xai-foret-v1 at: http://127.0.0.1:5001/#/experiments/6/runs/97704d016384404291a54eef1fc1196c
+🧪 View experiment at: http://127.0.0.1:5001/#/experiments/6
+explications et fiche modele journalisees
