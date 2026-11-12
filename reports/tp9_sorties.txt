@@ -1,0 +1,516 @@
+﻿# TP9 - sorties reelles (12/11/2026, Windows 11, Docker Desktop 29.1.2, kind 0.33.0, Kubernetes v1.37.0)
+
+=== ETAPE 0 : versions ===
+Docker version 29.1.2, build 890dcca
+Client:
+ Version:    29.1.2
+ Context:    desktop-linux
+Client Version: v1.34.1
+Kustomize Version: v5.7.1
+kind v0.33.0 go1.26.7 windows/amd64
+
+=== ETAPE 1 : premiers conteneurs ===
+Python 3.13.9
+ 
+3.12-slim: Pulling from library/python
+Digest: sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b
+Status: Downloaded newer image for python:3.12-slim
+Python 3.12.16
+Bonjour depuis un conteneur
+Python 3.12.16
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+CONTAINER ID   IMAGE                                  COMMAND                  CREATED         STATUS                              PORTS                                                                                                                           NAMES
+bde5940e7dd3   python:3.12-slim                       "python --version"       2 seconds ago   Exited (0) Less than a second ago                                                                                                                                   essai
+e76597c54218   bde2020/spark-worker:3.3.0-hadoop3.3   "/bin/bash /worker.sh"   7 months ago    Exited (255) 5 months ago           0.0.0.0:8081->8081/tcp                                                                                                          spark-worker
+9ee908ce71ab   bde2020/spark-master:3.3.0-hadoop3.3   "/bin/bash /master.sh"   7 months ago    Exited (255) 5 months ago           0.0.0.0:7077->7077/tcp, 6066/tcp, 0.0.0.0:8080->8080/tcp                                                                        spark-master
+b81f73785e41   elfaddouli/emi-cloudera-quickstart     "/usr/bin/docker-qui…"   8 months ago    Exited (255) 7 months ago           0.0.0.0:7180->7180/tcp, 80/tcp, 0.0.0.0:8080->8080/tcp, 0.0.0.0:8888->8888/tcp, 8088/tcp, 50075/tcp, 0.0.0.0:50070->50070/tcp   big-data-node
+7b6686a4ff15   hello-world                            "/hello"                 11 months ago   Exited (0) 8 months ago                                                                                                                                             objective_kare
+essai
+ 
+IMAGE                                       ID             DISK USAGE   CONTENT SIZE   EXTRA
+bde2020/spark-master:3.3.0-hadoop3.3        5d2623e337db        970MB          401MB   U    
+bde2020/spark-worker:3.3.0-hadoop3.3        7cd336bd08d0        970MB          401MB   U    
+elfaddouli/emi-cloudera-quickstart:latest   d04c9f529e43       13.7GB         4.79GB   U    
+hello-world:latest                          d4aaab6242e0       25.9kB         9.52kB   U    
+python:3.12-slim                            5e2bdb1b0d54        180MB         45.5MB        
+ubuntu:22.04                                3ba65aa20f86        119MB         31.5MB        
+
+=== ETAPE 6 : docker build -t fraude-api:1.0 ===
+#1 [internal] load build definition from Dockerfile
+#1 DONE 0.1s
+#2 [internal] load metadata for docker.io/library/python:3.12-slim
+#2 DONE 0.6s
+#3 [internal] load .dockerignore
+#3 DONE 0.0s
+#4 [internal] load build context
+#5 [1/6] FROM docker.io/library/python:3.12-slim@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b
+#5 DONE 0.2s
+#4 [internal] load build context
+#6 [2/6] WORKDIR /app
+#6 DONE 0.1s
+#4 [internal] load build context
+#4 DONE 0.5s
+#7 [3/6] COPY requirements.txt .
+#7 DONE 0.1s
+#8 [4/6] RUN pip install --no-cache-dir -r requirements.txt
+#8 DONE 188.6s
+#9 [5/6] COPY api/ ./api/
+#9 DONE 0.3s
+#10 [6/6] COPY models/ ./models/
+#10 DONE 0.1s
+#11 exporting to image
+#11 naming to docker.io/library/fraude-api:1.0 done
+#11 unpacking to docker.io/library/fraude-api:1.0
+#11 unpacking to docker.io/library/fraude-api:1.0 7.9s done
+#11 DONE 28.3s
+IMAGE            ID             DISK USAGE   CONTENT SIZE   EXTRA
+fraude-api:1.0   49d55fd465f4        695MB          158MB        
+
+=== ETAPE 7 ===
+CONTAINER ID   IMAGE            COMMAND                  CREATED         STATUS         PORTS                                         NAMES
+81f8906cf5cf   fraude-api:1.0   "uvicorn api.main:ap…"   7 seconds ago   Up 4 seconds   0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp   fraude
+
+statut version hote        
+------ ------- ----        
+ok     1.0     81f8906cf5cf
+
+
+
+
+fraude probabilite version hote        
+------ ----------- ------- ----        
+  True      0.8899 1.0     81f8906cf5cf
+
+
+
+code HTTP requete incomplete : 422
+
+=== ETAPE 8 ===
+PS> docker logs fraude
+/usr/local/lib/python3.12/site-packages/sklearn/base.py:525: InconsistentVersionWarning: Trying to unpickle estimator DecisionTreeClassifier from version 1.8.0 when using version 1.9.1. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:
+INFO:     172.17.0.1:50614 - "GET /health HTTP/1.1" 200 OK
+INFO:     172.17.0.1:50614 - "POST /predict HTTP/1.1" 200 OK
+INFO:     172.17.0.1:50614 - "POST /predict HTTP/1.1" 422 Unprocessable Entity
+https://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations
+  warnings.warn(
+/usr/local/lib/python3.12/site-packages/sklearn/base.py:525: InconsistentVersionWarning: Trying to unpickle estimator RandomForestClassifier from version 1.8.0 when using version 1.9.1. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:
+INFO:     172.17.0.1:46626 - "GET /docs HTTP/1.1" 200 OK
+INFO:     172.17.0.1:46648 - "GET /openapi.json HTTP/1.1" 200 OK
+https://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations
+  warnings.warn(
+INFO:     Started server process [1]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+PS> docker exec fraude python -c 'import sklearn; print(sklearn.__version__)'
+1.9.1
+PS> docker exec fraude ls /app /app/models
+/app:
+api
+models
+requirements.txt
+
+/app/models:
+model.pkl
+PS> docker stats --no-stream fraude
+NAME      CPU %     MEM USAGE / LIMIT
+fraude    0.26%     141.5MiB / 7.664GiB
+PS> docker stop fraude
+fraude
+PS> docker ps -a --filter name=fraude
+NAMES     STATUS
+fraude    Exited (0) Less than a second ago
+PS> docker rm fraude
+fraude
+PS> docker ps -a --filter name=fraude
+NAMES     STATUS
+
+=== ETAPE 9 ===
+--- Bon ordre, apres modification du code (fraude-api:1.1) : duree totale = 2.8 s
+#1 DONE 0.0s
+#2 DONE 0.4s
+#3 DONE 0.0s
+#4 DONE 0.0s
+#5 [1/6] FROM 
+#5 DONE 0.0s
+#6 [2/6] WORKDIR /app
+#6 CACHED
+#7 [3/6] COPY requirements.txt .
+#7 CACHED
+#8 [4/6] RUN pip install --no-cache-dir -r requirements.txt
+#8 CACHED
+#9 [5/6] COPY api/ ./api/
+#9 DONE 0.0s
+#10 [6/6] COPY models/ ./models/
+#10 DONE 0.1s
+#11 DONE 0.8s
+--- Mauvais ordre, premiere fois : duree totale = 230.2 s
+#1 DONE 0.0s
+#2 DONE 0.0s
+#3 DONE 0.0s
+#4 DONE 0.0s
+#5 [1/4] FROM 
+#5 DONE 0.0s
+#6 [2/4] WORKDIR /app
+#6 CACHED
+#4 DONE 0.0s
+#7 [3/4] COPY . .
+#7 DONE 0.1s
+#8 [4/4] RUN pip install --no-cache-dir -r requirements.txt
+#8 DONE 201.5s
+#9 DONE 27.4s
+--- Mauvais ordre, apres modification du code : duree totale = 187.4 s
+#1 DONE 0.0s
+#2 DONE 0.2s
+#3 DONE 0.0s
+#4 [1/4] FROM 
+#4 DONE 0.0s
+#5 DONE 0.0s
+#6 [2/4] WORKDIR /app
+#6 CACHED
+#7 [3/4] COPY . .
+#7 DONE 1.0s
+#8 [4/4] RUN pip install --no-cache-dir -r requirements.txt
+#8 DONE 157.1s
+#9 DONE 27.7s
+
+=== ETAPE 10 ===
+PS> docker images fraude-api:1.0
+REPOSITORY:TAG   IMAGE ID       SIZE
+fraude-api:1.0   49d55fd465f4   695MB
+PS> docker save -o fraude-api-1.0.tar fraude-api:1.0
+PS> (Get-Item fraude-api-1.0.tar).Length / 1MB
+150.9
+PS> docker rmi fraude-api:1.0
+Untagged: fraude-api:1.0
+Deleted: sha256:49d55fd465f476a34e6ce2c3add2fd21af63a1234b5f7eb5513bfa89a4ca846e
+PS> docker load -i fraude-api-1.0.tar
+Loaded image: fraude-api:1.0
+PS> docker images fraude-api:1.0
+REPOSITORY:TAG   IMAGE ID       SIZE
+fraude-api:1.0   49d55fd465f4   695MB
+
+=== ETAPE 11 ===
+PS> kind create cluster --name tp-mlops
+Creating cluster "tp-mlops" ...
+ â€¢ Ensuring node image (kindest/node:v1.37.0) ðŸ–¼ï¸  ...
+ âœ“ Ensuring node image (kindest/node:v1.37.0) ðŸ–¼ï¸
+ â€¢ Preparing nodes ðŸ“¦   ...
+ âœ“ Preparing nodes ðŸ“¦ 
+ â€¢ Writing configuration ðŸ“œ  ...
+ âœ“ Writing configuration ðŸ“œ
+ â€¢ Starting control-plane ðŸ•¹ï¸  ...
+ âœ“ Starting control-plane ðŸ•¹ï¸
+ â€¢ Installing CNI ðŸ”Œ  ...
+ âœ“ Installing CNI ðŸ”Œ
+ â€¢ Installing StorageClass ðŸ’¾  ...
+ âœ“ Installing StorageClass ðŸ’¾
+Set kubectl context to "kind-tp-mlops"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-tp-mlops
+
+Thanks for using kind! ðŸ˜Š
+PS> kubectl get nodes
+NAME                     STATUS   ROLES           AGE   VERSION
+tp-mlops-control-plane   Ready    control-plane   21s   v1.37.0
+PS> kind load docker-image fraude-api:1.0 --name tp-mlops
+Image: "fraude-api:1.0" with ID "sha256:49d55fd465f476a34e6ce2c3add2fd21af63a1234b5f7eb5513bfa89a4ca846e" not yet present on node "tp-mlops-control-plane", loading...
+
+=== ETAPE 13 ===
+PS> kubectl apply -f k8s/
+deployment.apps/fraude-api created
+service/fraude-api created
+PS> kubectl get pods -w   (extrait)
+NAME                          READY   STATUS              RESTARTS   AGE
+fraude-api-7b597b698c-knjt4   0/1     ContainerCreating   0          1s
+fraude-api-7b597b698c-p7lsj   0/1     ContainerCreating   0          1s
+fraude-api-7b597b698c-p7lsj   0/1     ContainerCreating   0          1s
+fraude-api-7b597b698c-knjt4   0/1     ContainerCreating   0          1s
+fraude-api-7b597b698c-p7lsj   0/1     Running             0          1s
+fraude-api-7b597b698c-knjt4   0/1     Running             0          1s
+fraude-api-7b597b698c-p7lsj   1/1     Running             0          12s
+fraude-api-7b597b698c-p7lsj   1/1     Running             0          12s
+fraude-api-7b597b698c-knjt4   1/1     Running             0          12s
+
+PS> kubectl get deployments,services,pods
+NAME                         READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/fraude-api   2/2     2            2           15s
+
+NAME                 TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
+service/fraude-api   ClusterIP   10.96.21.240   <none>        80/TCP    15s
+service/kubernetes   ClusterIP   10.96.0.1      <none>        443/TCP   75s
+
+NAME                              READY   STATUS    RESTARTS   AGE
+pod/fraude-api-7b597b698c-knjt4   1/1     Running   0          15s
+pod/fraude-api-7b597b698c-p7lsj   1/1     Running   0          15s
+
+PS> kubectl describe pod fraude-api-7b597b698c-knjt4   (Events)
+Events:
+  Type     Reason     Age                From               Message
+  ----     ------     ----               ----               -------
+  Normal   Scheduled  15s                default-scheduler  Successfully assigned default/fraude-api-7b597b698c-knjt4 to tp-mlops-control-plane
+  Normal   Pulled     14s                kubelet            Container image "fraude-api:1.0" already present on machine and can be accessed by the pod
+  Normal   Created    14s                kubelet            Container created
+  Normal   Started    14s                kubelet            Container started
+  Warning  Unhealthy  13s (x2 over 14s)  kubelet            Readiness probe failed: Get "http://10.244.0.6:8000/health": dial tcp 10.244.0.6:8000: connect: connection refused
+
+PS> kubectl logs fraude-api-7b597b698c-knjt4
+INFO:     Started server process [1]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     10.244.0.1:59812 - "GET /health HTTP/1.1" 200 OK
+
+=== ETAPE 14 ===
+terminal 1> kubectl port-forward service/fraude-api 8080:80
+terminal 2> Invoke-RestMethod http://localhost:8080/health
+{"statut":"ok","version":"1.0","hote":"fraude-api-7b597b698c-knjt4"}
+terminal 2> Invoke-RestMethod -Method Post -Uri http://localhost:8080/predict ... (Mme Benali)
+{"fraude":true,"probabilite":0.8899,"version":"1.0","hote":"fraude-api-7b597b698c-knjt4"}
+Forwarding from 127.0.0.1:8080 -> 8000
+Forwarding from [::1]:8080 -> 8000
+Handling connection for 8080
+Handling connection for 8080
+/c/Users/fatim/AppData/Local/Temp/claude/a9d7ce52576e7e01/f9a4c25d-e80e-442f-89c9-c96b32e3e3e3/scratchpad/etapes13_17.sh: line 30:   595 Terminated              kubectl port-forward service/fraude-api 8080:80 > $R/pf.log 2>&1
+
+=== ETAPE 15 ===
+PS> kubectl run client --rm -i --restart=Never --image=fraude-api:1.0 -- python api/client.py 10
+All commands and output from this session will be recorded in container logs, including credentials and sensitive information passed through the command prompt.
+If you don't see a command prompt, try pressing enter.
+17:45:10 {'v1.0': 19} pods: 2 erreurs: 0
+17:45:12 {'v1.0': 19} pods: 2 erreurs: 0
+17:45:14 {'v1.0': 18} pods: 2 erreurs: 0
+17:45:16 {'v1.0': 18} pods: 2 erreurs: 0
+17:45:18 {'v1.0': 20} pods: 2 erreurs: 0
+reponses par pod : {'fraude-api-7b597b698c-p7lsj': 52, 'fraude-api-7b597b698c-knjt4': 42}
+pod "client" deleted from default namespace
+
+=== ETAPE 16 ===
+PS> kubectl scale deployment fraude-api --replicas=4
+deployment.apps/fraude-api scaled
+PS> kubectl get pods
+NAME                          READY   STATUS    RESTARTS   AGE
+fraude-api-7b597b698c-knjt4   1/1     Running   0          36s
+fraude-api-7b597b698c-p7lsj   1/1     Running   0          36s
+fraude-api-7b597b698c-p82ps   0/1     Running   0          2s
+fraude-api-7b597b698c-zmjhf   0/1     Running   0          2s
+PS> kubectl get pods   # quelques secondes plus tard
+NAME                          READY   STATUS    RESTARTS   AGE
+fraude-api-7b597b698c-knjt4   1/1     Running   0          48s
+fraude-api-7b597b698c-p7lsj   1/1     Running   0          48s
+fraude-api-7b597b698c-p82ps   1/1     Running   0          14s
+fraude-api-7b597b698c-zmjhf   1/1     Running   0          14s
+PS> kubectl run client --rm -i --restart=Never --image=fraude-api:1.0 -- python api/client.py 6
+All commands and output from this session will be recorded in container logs, including credentials and sensitive information passed through the command prompt.
+If you don't see a command prompt, try pressing enter.
+17:45:38 {'v1.0': 20} pods: 4 erreurs: 0
+17:45:40 {'v1.0': 22} pods: 4 erreurs: 0
+17:45:42 {'v1.0': 21} pods: 4 erreurs: 0
+reponses par pod : {'fraude-api-7b597b698c-p82ps': 19, 'fraude-api-7b597b698c-p7lsj': 18, 'fraude-api-7b597b698c-zmjhf': 14, 'fraude-api-7b597b698c-knjt4': 12}
+pod "client" deleted from default namespace
+
+=== ETAPE 17 ===
+PS> kubectl get pods   # AVANT la suppression
+NAME                          READY   STATUS    RESTARTS   AGE
+fraude-api-7b597b698c-knjt4   1/1     Running   0          57s
+fraude-api-7b597b698c-p7lsj   1/1     Running   0          57s
+fraude-api-7b597b698c-p82ps   1/1     Running   0          23s
+fraude-api-7b597b698c-zmjhf   1/1     Running   0          23s
+PS> kubectl delete pod fraude-api-7b597b698c-knjt4
+pod "fraude-api-7b597b698c-knjt4" deleted from default namespace
+PS> kubectl get pods   # juste APRES
+NAME                          READY   STATUS        RESTARTS   AGE
+fraude-api-7b597b698c-8vhxd   0/1     Running       0          3s
+fraude-api-7b597b698c-knjt4   1/1     Terminating   0          60s
+fraude-api-7b597b698c-p7lsj   1/1     Running       0          60s
+fraude-api-7b597b698c-p82ps   1/1     Running       0          26s
+fraude-api-7b597b698c-zmjhf   1/1     Running       0          26s
+PS> kubectl get pods   # quelques secondes plus tard
+NAME                          READY   STATUS    RESTARTS   AGE
+fraude-api-7b597b698c-8vhxd   1/1     Running   0          14s
+fraude-api-7b597b698c-p7lsj   1/1     Running   0          71s
+fraude-api-7b597b698c-p82ps   1/1     Running   0          37s
+fraude-api-7b597b698c-zmjhf   1/1     Running   0          37s
+PS> kubectl scale deployment fraude-api --replicas=2
+deployment.apps/fraude-api scaled
+
+=== ETAPE 18 : construire et charger la version 2.0 ===
+VERSION = "2.0"                                      # version du service
+PS> docker build -t fraude-api:2.0 .
+sha256:ed4584312a238fbac4624e36ca9c78fd6e877c50b3bb29057ecb709875a7cdd0
+PS> kind load docker-image fraude-api:2.0 --name tp-mlops
+Image: "fraude-api:2.0" with ID "sha256:ed4584312a238fbac4624e36ca9c78fd6e877c50b3bb29057ecb709875a7cdd0" not yet present on node "tp-mlops-control-plane", loading...
+
+terminal 2> kubectl set image deployment/fraude-api api=fraude-api:2.0
+deployment.apps/fraude-api image updated
+terminal 2> kubectl rollout status deployment/fraude-api
+Waiting for deployment "fraude-api" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "fraude-api" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "fraude-api" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "fraude-api" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "fraude-api" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "fraude-api" rollout to finish: 1 old replicas are pending termination...
+deployment "fraude-api" successfully rolled out
+terminal 2> kubectl rollout history deployment/fraude-api
+deployment.apps/fraude-api 
+REVISION  CHANGE-CAUSE
+1         <none>
+2         <none>
+
+
+terminal 1> kubectl run client --rm -i --restart=Never --image=fraude-api:1.0 -- python api/client.py 40
+17:46:45 {'v1.0': 19} pods: 2 erreurs: 0
+17:46:47 {'v1.0': 20} pods: 2 erreurs: 0
+17:46:49 {'v1.0': 21} pods: 2 erreurs: 0
+17:46:51 {'v1.0': 20} pods: 2 erreurs: 0
+17:46:53 {'v1.0': 21} pods: 2 erreurs: 0
+17:46:55 {'v1.0': 20} pods: 2 erreurs: 0
+17:46:57 {'v1.0': 19} pods: 2 erreurs: 0
+17:46:59 {'v1.0': 20} pods: 2 erreurs: 0
+17:47:01 {'v1.0': 18} pods: 2 erreurs: 0
+17:47:03 {'v1.0': 14, 'v2.0': 4} pods: 3 erreurs: 0
+17:47:05 {'v1.0': 9, 'v2.0': 12} pods: 2 erreurs: 0
+17:47:07 {'v2.0': 13, 'v1.0': 6} pods: 2 erreurs: 0
+17:47:09 {'v2.0': 13, 'v1.0': 5} pods: 2 erreurs: 0
+17:47:11 {'v1.0': 12, 'v2.0': 8} pods: 2 erreurs: 0
+17:47:13 {'v1.0': 9, 'v2.0': 10} pods: 3 erreurs: 0
+17:47:15 {'v1.0': 2, 'v2.0': 18} pods: 3 erreurs: 0
+17:47:18 {'v2.0': 20} pods: 2 erreurs: 0
+17:47:20 {'v2.0': 21} pods: 2 erreurs: 0
+17:47:22 {'v2.0': 20} pods: 2 erreurs: 0
+17:47:24 {'v2.0': 20} pods: 2 erreurs: 0
+reponses par pod : {'fraude-api-7b597b698c-p7lsj': 87, 'fraude-api-7b597b698c-zmjhf': 148, 'fraude-api-5646748c6d-9jf9q': 110, 'fraude-api-5646748c6d-cchtr': 49}
+pod "client" deleted from default namespace
+
+=== ETAPE 19 : fabriquer la version en panne ===
+VERSION = "2.1"                                      # version du service
+modele = joblib.load("models/modele.pkl")             # charge une seule fois, au demarrage
+PS> docker build -t fraude-api:2.1 .
+sha256:377cf91cc3a8f11f1d9e3b8c9e0629df86465107c595187dd084d82c2b8c1dbf
+PS> kind load docker-image fraude-api:2.1 --name tp-mlops
+Image: "fraude-api:2.1" with ID "sha256:377cf91cc3a8f11f1d9e3b8c9e0629df86465107c595187dd084d82c2b8c1dbf" not yet present on node "tp-mlops-control-plane", loading...
+
+terminal 2> kubectl set image deployment/fraude-api api=fraude-api:2.1
+deployment.apps/fraude-api image updated
+terminal 2> kubectl rollout status deployment/fraude-api --timeout=40s
+Waiting for deployment "fraude-api" rollout to finish: 1 out of 2 new replicas have been updated...
+error: timed out waiting for the condition
+terminal 2> kubectl get pods
+NAME                          READY   STATUS    RESTARTS      AGE
+client                        1/1     Running   0             46s
+fraude-api-5646748c6d-9jf9q   1/1     Running   0             103s
+fraude-api-5646748c6d-cchtr   1/1     Running   0             92s
+fraude-api-5d84bf5589-zdccw   0/1     Error     2 (32s ago)   40s
+terminal 2> kubectl logs fraude-api-5d84bf5589-zdccw | Select-Object -Last 4
+  File "/usr/local/lib/python3.12/site-packages/joblib/numpy_pickle.py", line 741, in load
+    with open(filename, "rb") as f:
+         ^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'models/modele.pkl'
+terminal 2> kubectl rollout undo deployment/fraude-api
+deployment.apps/fraude-api rolled back
+terminal 2> kubectl rollout status deployment/fraude-api
+deployment "fraude-api" successfully rolled out
+terminal 2> kubectl get pods
+NAME                          READY   STATUS    RESTARTS   AGE
+client                        1/1     Running   0          50s
+fraude-api-5646748c6d-9jf9q   1/1     Running   0          107s
+fraude-api-5646748c6d-cchtr   1/1     Running   0          96s
+terminal 2> kubectl rollout history deployment/fraude-api
+deployment.apps/fraude-api 
+REVISION  CHANGE-CAUSE
+1         <none>
+3         <none>
+4         <none>
+
+
+terminal 1> kubectl run client --rm -i --restart=Never --image=fraude-api:1.0 -- python api/client.py 50
+17:47:49 {'v2.0': 20} pods: 2 erreurs: 0
+17:47:52 {'v2.0': 21} pods: 2 erreurs: 0
+17:47:54 {'v2.0': 20} pods: 2 erreurs: 0
+17:47:56 {'v2.0': 18} pods: 2 erreurs: 0
+17:47:58 {'v2.0': 21} pods: 2 erreurs: 0
+17:48:00 {'v2.0': 21} pods: 2 erreurs: 0
+17:48:02 {'v2.0': 20} pods: 2 erreurs: 0
+17:48:04 {'v2.0': 19} pods: 2 erreurs: 0
+17:48:06 {'v2.0': 22} pods: 2 erreurs: 0
+17:48:08 {'v2.0': 20} pods: 2 erreurs: 0
+17:48:10 {'v2.0': 21} pods: 2 erreurs: 0
+17:48:12 {'v2.0': 21} pods: 2 erreurs: 0
+17:48:14 {'v2.0': 21} pods: 2 erreurs: 0
+17:48:16 {'v2.0': 21} pods: 2 erreurs: 0
+17:48:18 {'v2.0': 20} pods: 2 erreurs: 0
+17:48:20 {'v2.0': 21} pods: 2 erreurs: 0
+17:48:22 {'v2.0': 21} pods: 2 erreurs: 0
+17:48:24 {'v2.0': 21} pods: 2 erreurs: 0
+17:48:26 {'v2.0': 22} pods: 2 erreurs: 0
+17:48:28 {'v2.0': 19} pods: 2 erreurs: 0
+17:48:30 {'v2.0': 21} pods: 2 erreurs: 0
+17:48:32 {'v2.0': 21} pods: 2 erreurs: 0
+17:48:34 {'v2.0': 20} pods: 2 erreurs: 0
+17:48:37 {'v2.0': 20} pods: 2 erreurs: 0
+17:48:39 {'v2.0': 21} pods: 2 erreurs: 0
+reponses par pod : {'fraude-api-5646748c6d-cchtr': 245, 'fraude-api-5646748c6d-9jf9q': 268}
+pod "client" deleted from default namespace
+
+=== QUESTION 7 (facultatif) : mise a jour SANS preStop ===
+
+PS> kubectl patch deployment fraude-api --type=json -p '[{"op":"remove","path":"/spec/template/spec/containers/0/lifecycle"}]'
+deployment.apps/fraude-api patched
+Waiting for deployment "fraude-api" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "fraude-api" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "fraude-api" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "fraude-api" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "fraude-api" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "fraude-api" rollout to finish: 1 old replicas are pending termination...
+deployment "fraude-api" successfully rolled out
+terminal 1> kubectl run client --rm -i --restart=Never --image=fraude-api:1.0 -- python api/client.py 40   (SANS preStop, mise a jour 2.0 -> 1.0)
+17:49:19 {'v2.0': 19} pods: 2 erreurs: 0
+17:49:21 {'v2.0': 21} pods: 2 erreurs: 0
+17:49:24 {'v2.0': 21} pods: 2 erreurs: 0
+17:49:26 {'v2.0': 19} pods: 2 erreurs: 0
+17:49:28 {'v2.0': 21} pods: 2 erreurs: 0
+17:49:30 {'v2.0': 20} pods: 2 erreurs: 0
+17:49:32 {'v2.0': 19} pods: 2 erreurs: 0
+17:49:34 {'v2.0': 20} pods: 2 erreurs: 0
+17:49:36 {'v2.0': 20} pods: 2 erreurs: 0
+17:49:38 {'v2.0': 11, 'v1.0': 7} pods: 3 erreurs: 1
+17:49:40 {'v2.0': 11, 'v1.0': 9} pods: 2 erreurs: 0
+17:49:42 {'v2.0': 10, 'v1.0': 10} pods: 2 erreurs: 0
+17:49:44 {'v2.0': 12, 'v1.0': 9} pods: 2 erreurs: 0
+17:49:46 {'v2.0': 7, 'v1.0': 9} pods: 2 erreurs: 0
+17:49:48 {'v1.0': 10, 'v2.0': 6} pods: 3 erreurs: 7
+17:49:50 {'v1.0': 19} pods: 2 erreurs: 3
+17:49:52 {'v1.0': 21} pods: 2 erreurs: 0
+17:49:54 {'v1.0': 20} pods: 2 erreurs: 0
+17:49:56 {'v1.0': 21} pods: 2 erreurs: 0
+17:49:58 {'v1.0': 21} pods: 2 erreurs: 0
+reponses par pod : {'fraude-api-7f6f78cf46-4vwjb': 91, 'fraude-api-7f6f78cf46-6ffgq': 146, 'fraude-api-7f5cc54f5f-4p7j2': 98, 'fraude-api-7f5cc54f5f-7nhfz': 58}
+pod "client" deleted from default namespace
+
+terminal 2> kubectl set image deployment/fraude-api api=fraude-api:1.0
+deployment.apps/fraude-api image updated
+Waiting for deployment "fraude-api" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "fraude-api" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "fraude-api" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "fraude-api" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "fraude-api" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "fraude-api" rollout to finish: 1 old replicas are pending termination...
+deployment "fraude-api" successfully rolled out
+
+=== ETAPE 20 ===
+PS> kubectl delete -f k8s/
+deployment.apps "fraude-api" deleted from default namespace
+service "fraude-api" deleted from default namespace
+PS> kind delete cluster --name tp-mlops
+Deleting cluster "tp-mlops" ...
+Deleted nodes: ["tp-mlops-control-plane"]
+PS> docker rmi fraude-api:2.0 fraude-api:2.1
+Untagged: fraude-api:2.0
+Deleted: sha256:ed4584312a238fbac4624e36ca9c78fd6e877c50b3bb29057ecb709875a7cdd0
+Untagged: fraude-api:2.1
+Deleted: sha256:377cf91cc3a8f11f1d9e3b8c9e0629df86465107c595187dd084d82c2b8c1dbf
+PS> Remove-Item fraude-api-1.0.tar
+PS> docker images fraude-api
+REPOSITORY:TAG   IMAGE ID       SIZE
+fraude-api:1.0   49d55fd465f4   695MB
