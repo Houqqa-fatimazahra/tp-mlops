@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.knime.org/2008/09/XMLConfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.knime.org/2008/09/XMLConfig http://www.knime.org/XMLConfig_2008_09.xsd" key="settings.xml">
+    <entry key="node_file" type="xstring" value="settings.xml"/>
+    <config key="flow_stack"/>
+    <config key="internal_node_subsettings">
+        <entry key="memory_policy" type="xstring" value="CacheSmallInMemory"/>
+    </config>
+    <config key="model">
+        <entry key="referenceType" type="xstring" value="FILE"/>
+        <entry key="uri" type="xstring" value="knime://knime.workflow/data/163_2000892186"/>
+        <entry key="is_table" type="xboolean" value="false"/>
+        <entry key="copyData" type="xboolean" value="false"/>
+        <config key="flowVariables">
+            <config key="flowVar_0">
+                <entry key="name" type="xstring" value="port_check"/>
+                <entry key="class" type="xstring" value="INTEGER"/>
+                <entry key="value" type="xint" value="0"/>
+            </config>
+            <config key="flowVar_1">
+                <entry key="name" type="xstring" value="seed"/>
+                <entry key="class" type="xstring" value="INTEGER"/>
+                <entry key="value" type="xint" value="123456"/>
+            </config>
+            <config key="flowVar_2">
+                <entry key="name" type="xstring" value="eta"/>
+                <entry key="class" type="xstring" value="DOUBLE"/>
+                <entry key="value" type="xdouble" value="0.2"/>
+            </config>
+            <config key="flowVar_3">
+                <entry key="name" type="xstring" value="max_depth"/>
+                <entry key="class" type="xstring" value="INTEGER"/>
+                <entry key="value" type="xint" value="5"/>
+            </config>
+            <config key="flowVar_4">
+                <entry key="name" type="xstring" value="positive"/>
+                <entry key="class" type="xstring" value="STRING"/>
+                <entry key="value" type="xstring" value="1"/>
+            </config>
+            <config key="flowVar_5">
+                <entry key="name" type="xstring" value="Number_of_Validations"/>
+                <entry key="class" type="xstring" value="INTEGER"/>
+                <entry key="value" type="xint" value="4"/>
+            </config>
+            <config key="flowVar_6">
+                <entry key="name" type="xstring" value="metric_auto"/>
+                <entry key="class" type="xstring" value="STRING"/>
+                <entry key="value" type="xstring" value="F-measure"/>
+            </config>
+            <config key="flowVar_7">
+                <entry key="name" type="xstring" value="model_to_be_trained"/>
+                <entry key="class" type="xstring" value="STRING"/>
+                <entry key="value" type="xstring" value="Naive Bayes,Logistic Regression,Neural Network,Gradient Boosted Trees,Decision Tree,Random Forest,XGBoost Trees,Generalized Linear Model (H2O)"/>
+            </config>
+            <config key="flowVar_8">
+                <entry key="name" type="xstring" value="Prediction_target"/>
+                <entry key="class" type="xstring" value="STRING"/>
+                <entry key="value" type="xstring" value="Prediction (fraude)"/>
+            </config>
+            <config key="flowVar_9">
+                <entry key="name" type="xstring" value="target_column"/>
+                <entry key="class" type="xstring" value="STRING"/>
+                <entry key="value" type="xstring" value="fraude"/>
+            </config>
+        </config>
+    </config>
+    <entry key="customDescription" type="xstring" isnull="true" value=""/>
+    <entry key="state" type="xstring" value="CONFIGURED"/>
+    <entry key="factory" type="xstring" value="org.knime.core.node.exec.dataexchange.in.PortObjectInNodeFactory"/>
+    <entry key="node-name" type="xstring" value="PortObject Reference Reader"/>
+    <entry key="node-bundle-name" type="xstring" value="KNIME Core API"/>
+    <entry key="node-bundle-symbolic-name" type="xstring" value="org.knime.core"/>
+    <entry key="node-bundle-vendor" type="xstring" value="KNIME AG, Zurich, Switzerland"/>
+    <entry key="node-bundle-version" type="xstring" value="5.12.0.v202606180846"/>
+    <entry key="node-feature-name" type="xstring" value="KNIME AP Core feature"/>
+    <entry key="node-feature-symbolic-name" type="xstring" value="org.knime.features.core.feature.group"/>
+    <entry key="node-feature-vendor" type="xstring" value="KNIME AG, Zurich, Switzerland"/>
+    <entry key="node-feature-version" type="xstring" value="5.12.0.v202606180846"/>
+    <config key="factory_settings"/>
+    <entry key="name" type="xstring" value="PortObject Reference Reader"/>
+    <entry key="hasContent" type="xboolean" value="false"/>
+    <entry key="isInactive" type="xboolean" value="false"/>
+    <config key="ports">
+        <config key="port_1">
+            <entry key="index" type="xint" value="1"/>
+            <entry key="port_dir_location" type="xstring" isnull="true" value=""/>
+        </config>
+    </config>
+    <config key="filestores">
+        <entry key="file_store_location" type="xstring" isnull="true" value=""/>
+        <entry key="file_store_id" type="xstring" isnull="true" value=""/>
+    </config>
+</config>
