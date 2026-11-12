@@ -44,6 +44,9 @@ Commande exécutée dans Flow : `getLeaderboard "AutoML_1_20261112_24846@@fraude
 | `h2o-flow-gbm1-fiche.png` | fiche de `GBM_1_AutoML_1_20261112_24846` (Gradient Boosting Machine), historique du logloss |
 | `h2o-flow-gbm1-roc-importances.png` | courbe ROC en validation croisée (AUC = 0.9856) et VARIABLE IMPORTANCES |
 | `h2o-flow-gbm1-matrices.png` | matrices de confusion TRAINING et CROSS VALIDATION |
+| `h2o-flow-list-all-models.png` | menu **Model > List All Models** : 14 modèles dans le serveur, soit les 12 du leaderboard + les 2 méta-modèles GLM (`metalearner_AUTO_StackedEnsemble_...`) des ensembles |
+| `h2o-flow-run-automl-parametres.png` | menu **Model > Run AutoML...** : formulaire (training_frame, response_column, sort_metric, nfolds, exclude_algos…), **non lancé** |
+| `h2o-flow-run-automl-budget.png` | suite du formulaire : `seed`, `max_models`, `max_runtime_secs` |
 | `mlflow-registre-production.png` | registre MLflow : `fraude-h2o` et `fraude-flaml`, version 1, alias `@production` |
 | `mlflow-experience-tp6.png` | expérience `tp6-automl-deploiement` : runs `h2o-automl-10-modeles` (2,3 min) et `flaml-25-essais` (13,5 s) |
 
@@ -59,6 +62,7 @@ Constats :
   | CROSS VALIDATION | 357 / 434 | 77 | 78 / 3 316 | 4,13 % |
 
   La matrice **TRAINING est la plus optimiste** : le modèle y est évalué sur les lignes qu'il a apprises. En validation croisée, chaque ligne est prédite par un modèle qui ne l'a jamais vue. C'est cette seconde matrice qui estime le comportement en production : le rappel de la classe fraude passe de 0,94 à 0,82.
+- **Model > Run AutoML...** : c'est le même lancement que `src/h2o_automl.py`, à la souris. On y retrouve `response_column`, `sort_metric`, `nfolds` (-1 = AUTO, soit 5 plis) et `exclude_algos` (GLM, DRF, GBM, DeepLearning, StackedEnsemble, XGBoost). Par défaut, `seed = -1`, `max_models = 0` et `max_runtime_secs = 0`. Sans aucune limite, H2O utilise donc un budget de **3 600 s**, et le formulaire précise qu'il faut toujours fixer `max_models` pour la reproductibilité. Les valeurs par défaut de l'interface ne sont donc pas reproductibles ; c'est pour cela que le script fixe `seed=42` et `max_models=10` (question 2).
 
 ## Réponses aux questions
 
