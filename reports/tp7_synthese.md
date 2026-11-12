@@ -1,0 +1,18 @@
+# TP 7 — Synthèse comparative : Prefect, Node-RED et intégration continue
+
+| Critère | Prefect (orchestrateur) | Node-RED (automatisation low-code) | Chaîne CI (GitHub Actions, GitLab CI) |
+|---|---|---|---|
+| **Ce qui déclenche l'exécution** | Une planification (`cron '0 6 * * 1'`, chaque lundi à 6 h), un « Quick run » dans l'interface, un appel à l'API (`create_flow_run`) ou `python flow_mlops.py` | Un événement : un clic sur un nœud **inject**, une minuterie (toutes les 10 s), une erreur captée par un nœud **catch**, une requête HTTP entrante, un message MQTT | Un événement du dépôt Git : `push`, ouverture ou mise à jour d'une pull request, tag de version, ou une planification |
+| **Qui peut la modifier** | Un développeur Python : le workflow est du code (`flow_mlops.py`), relu et versionné | N'importe quel utilisateur qui a accès à l'éditeur web : on modifie les nœuds à la souris puis on clique sur **Deploy** | Un développeur, via un fichier YAML dans le dépôt (`.github/workflows/*.yml`), modifié par commit et relu en pull request |
+| **Ce qui se passe en cas d'échec** | La tâche passe en **Failed**, le flux s'arrête (les tâches suivantes ne s'exécutent pas), l'exécution apparaît en rouge dans l'interface avec la tâche fautive et ses journaux. Réessais automatiques possibles (`retries=2` sur `rejouer_pipeline`) | Le nœud qui échoue affiche un statut rouge et émet une erreur ; un nœud **catch** la récupère et peut alerter, écrire un journal (`reports/alertes.log`), appeler un webhook. Sans catch, l'erreur est seulement affichée dans la barre Debug | Le job échoue, le commit ou la pull request est marqué en rouge, la fusion peut être bloquée ; une notification part à l'auteur |
+| **Comment on la versionne** | Directement : `flow_mlops.py` est un fichier Python dans Git. La planification est déclarée par `prefect deploy` (ou un `prefect.yaml` versionné) | Indirectement : il faut **exporter** les flux en JSON (`nodered/flows.json`) et le commiter. Ce qui est déployé dans l'éditeur peut diverger du fichier si on oublie d'exporter | Directement : le fichier YAML de la chaîne vit dans le dépôt, à côté du code qu'il teste |
+| **Type de tâche adapté** | **Traitements** récurrents et longs écrits en Python : réentraînement, pipeline DVC, validation, scoring par lots, avec suivi, réessais et historique | **Brancher** des traitements sur des événements sans code : bouton métier, surveillance d'un service, alertes, intégrations entre API (Prefect, MLflow, messagerie, IoT) | **Valider le code** à chaque modification : tests unitaires, lint, construction d'image, `dvc repro` de contrôle, déploiement après validation |
+| **Utilisé dans ce TP** | Oui : 5 exécutions (4 réussies, 1 échouée sur la règle de qualité), 1 déploiement planifié, 1 worker | Oui : flux 1 (réentraînement d'un clic) et flux 2 (surveillance du modèle, 9 incidents journalisés pendant la panne) | Non : vu en cours seulement |
+
+## Conclusion
+
+- **Prefect exécute et surveille des traitements** récurrents écrits en Python : il sait quand lancer le réentraînement, le découpe en tâches observables, réessaie ce qui peut l'être et s'arrête sur la règle de qualité (F1 0,2013 < 0,82 : modèle refusé).
+- **Node-RED branche ces traitements sur des événements**, sans code : un bouton pour un profil métier, une minuterie qui interroge le modèle en service, une erreur qui déclenche une alerte horodatée.
+- **Une chaîne CI valide le code** à chaque modification, avant que Prefect ne l'exécute en production.
+
+Les trois sont **complémentaires** : la CI garantit que le code est bon, Prefect garantit que le traitement tourne et est surveillé, Node-RED relie le tout aux personnes et aux événements.
