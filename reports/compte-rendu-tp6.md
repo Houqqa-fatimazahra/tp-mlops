@@ -32,16 +32,33 @@ Environnement : Windows 11, Java Temurin 17.0.20, Python 3.13, H2O-3 3.46.0.12, 
 - **Pas de XGBoost dans H2O** : le journal affiche « XGBoost is not available; skipping it ». L'extension XGBoost d'H2O-3 n'est pas fournie sous Windows. Les 10 modèles de base sont donc des GBM, GLM, DRF et XRT ; le leaderboard diffère de celui de l'énoncé et le F1 du Stacked Ensemble est **0.8623** au lieu de 0.8464. Conséquence pour l'étape 3 : la fiche à ouvrir dans H2O Flow est **GBM_1_...** (le meilleur modèle simple), pas XGBoost_2.
 - **Latence H2O plus basse que dans l'énoncé** (≈ 63 ms au lieu de 260–450 ms) ; seule la première série juste après un redémarrage atteint 271 ms (chargement à froid). L'écart avec FLAML est donc d'environ **×5 à ×6**, pas ×50, mais l'ordre de grandeur reste nettement en faveur de FLAML.
 
-## Étape 3 — H2O Flow (à compléter avec vos captures)
+## Étape 3 — H2O Flow
 
-Ouvrir http://127.0.0.1:54321, puis `getLeaderboard "AutoML_1_xxx@@fraude"` (Ctrl+Entrée).
+Après la panne de l'étape 7, H2O avait perdu le projet AutoML. La même recherche (mêmes paramètres, sans nouvel enregistrement MLflow) a été relancée pour les captures : projet `AutoML_1_20261112_24846`, **mêmes AUC au millionième près** (0.987008 / 0.986746 / 0.985618…). La recherche est donc bien reproductible.
 
-> ⚠️ Après la panne de l'étape 7, H2O a été redémarré : le projet AutoML a disparu de sa mémoire. Pour faire les captures, relancez `python src/h2o_automl.py` (nouveau projet `AutoML_x_...`, version 2 de `fraude-h2o` ; les scores sont les mêmes).
+Commande exécutée dans Flow : `getLeaderboard "AutoML_1_20261112_24846@@fraude"`.
 
-Points attendus :
-- EVENT LOG : validation **5-fold cross-validation**, **Build control seed: 42**.
-- VARIABLE IMPORTANCES : `montant` loin devant, puis `anciennete`, `freq_24h`, `nuit`.
-- Matrice **TRAINING** nettement plus optimiste que **CROSS VALIDATION** : le modèle est évalué sur les lignes qu'il a apprises ; la validation croisée l'évalue sur des plis qu'il n'a pas vus.
+| Capture (`reports/captures/`) | Contenu |
+|---|---|
+| `h2o-flow-leaderboard.png` | classement complet : **12 modèles** (10 de base + 2 Stacked Ensembles) triés par AUC, et le début de l'EVENT LOG |
+| `h2o-flow-gbm1-fiche.png` | fiche de `GBM_1_AutoML_1_20261112_24846` (Gradient Boosting Machine), historique du logloss |
+| `h2o-flow-gbm1-roc-importances.png` | courbe ROC en validation croisée (AUC = 0.9856) et VARIABLE IMPORTANCES |
+| `h2o-flow-gbm1-matrices.png` | matrices de confusion TRAINING et CROSS VALIDATION |
+| `mlflow-registre-production.png` | registre MLflow : `fraude-h2o` et `fraude-flaml`, version 1, alias `@production` |
+| `mlflow-experience-tp6.png` | expérience `tp6-automl-deploiement` : runs `h2o-automl-10-modeles` (2,3 min) et `flaml-25-essais` (13,5 s) |
+
+Constats :
+- **EVENT LOG** : « 5-fold cross-validation will be used » et « Build control seed: 42 ».
+- **Classement** : StackedEnsemble_AllModels (0.9870), StackedEnsemble_BestOfFamily (0.9867), GBM_1 (0.9856), deux GBM de grille, GBM_5, GBM_2, GBM_3, GBM_4, GLM_1, XRT_1 et DRF_1 (0.9768). Il n'y a pas de XGBoost, absent sous Windows : le meilleur modèle simple est **GBM_1**.
+- **VARIABLE IMPORTANCES de GBM_1** : `montant` loin devant (1.0), puis `freq_24h` (≈ 0.40), `anciennete` (≈ 0.34) et `nuit` (≈ 0.28). L'ordre de `freq_24h` et `anciennete` est inversé par rapport au XGBoost_2 de l'énoncé : c'est un autre algorithme.
+- **Matrices de GBM_1** :
+
+  | | Fraudes reconnues | Fraudes manquées | Fausses alertes | Erreur totale |
+  |---|---|---|---|---|
+  | TRAINING | 410 / 434 | 24 | 50 / 3 316 | 1,97 % |
+  | CROSS VALIDATION | 357 / 434 | 77 | 78 / 3 316 | 4,13 % |
+
+  La matrice **TRAINING est la plus optimiste** : le modèle y est évalué sur les lignes qu'il a apprises. En validation croisée, chaque ligne est prédite par un modèle qui ne l'a jamais vue. C'est cette seconde matrice qui estime le comportement en production : le rappel de la classe fraude passe de 0,94 à 0,82.
 
 ## Réponses aux questions
 
@@ -56,8 +73,3 @@ Points attendus :
 **5. Quel modèle en production ?** Le modèle manuel du TP 3 a le meilleur F1 (0.8669), mais l'écart avec H2O (0.8623) et FLAML (0.8359) doit être jugé avec d'autres critères : **latence** et p95 (paiement temps réel), **dépendances** et robustesse (pas de JVM ni de serveur à état), **taille** (43 Ko pour FLAML contre 16 Mo pour la forêt), **explicabilité** (un seul modèle d'arbres, importances et SHAP), **reproductibilité** et coût de maintenance. Je déploierais la forêt du TP 3 ou le LightGBM de FLAML — pas le Stacked Ensemble H2O — en choisissant entre les deux selon le coût métier d'une fraude manquée (rappel) face à une fausse alerte. Le F1 seul ne suffit pas : il faut aussi fixer un seuil de décision adapté.
 
 **6. Reconstruire le modèle H2O dans deux ans.** Le format binaire H2O n'est lisible que par la même version d'H2O, et l'export MOJO autonome est réservé à l'édition commerciale. Il faut donc conserver : le **script** `src/h2o_automl.py` (versionné dans Git), les **données exactes** versionnées avec **DVC** (`data/transactions.csv.dvc`), le découpage (`random_state=42`, `test_size=0.25`), les **paramètres de l'AutoML** (`max_models=10`, `seed=42`, `exclude_algos=['DeepLearning']`, `sort_metric='AUC'`), la **version exacte d'H2O (3.46.0.12) et de Java (17)**, l'OS (le contenu du leaderboard dépend de la disponibilité de XGBoost : absent sous Windows), les versions des bibliothèques Python (`pip freeze`), et l'artefact binaire lui-même dans le registre MLflow.
-
-## Livrables restant à faire à la main
-
-- [ ] Captures H2O Flow : leaderboard + fiche de GBM_1 avec VARIABLE IMPORTANCES → `reports/captures/`
-- [ ] Capture du registre MLflow (http://127.0.0.1:5001/#/models) montrant `fraude-h2o` et `fraude-flaml` avec l'alias `production`
