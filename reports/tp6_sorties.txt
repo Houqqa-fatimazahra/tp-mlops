@@ -1,0 +1,55 @@
+=== Etape 2 : python src/h2o_automl.py ===
+AutoML: XGBoost is not available; skipping it.        (H2O ne fournit pas XGBoost sous Windows)
+projet AutoML : AutoML_1_20261112_23749
+                                              model_id      auc  logloss
+   StackedEnsemble_AllModels_1_AutoML_1_20261112_23749 0.987008 0.092551
+StackedEnsemble_BestOfFamily_1_AutoML_1_20261112_23749 0.986746 0.093142
+                         GBM_1_AutoML_1_20261112_23749 0.985618 0.098490
+            GBM_grid_1_AutoML_1_20261112_23749_model_1 0.985053 0.104387
+            GBM_grid_1_AutoML_1_20261112_23749_model_2 0.984788 0.103303
+                         GBM_5_AutoML_1_20261112_23749 0.982345 0.111195
+                         GBM_2_AutoML_1_20261112_23749 0.981853 0.111569
+                         GBM_3_AutoML_1_20261112_23749 0.981419 0.114050
+modele retenu : StackedEnsemble_AllModels_1_AutoML_1_20261112_23749 | F1 test = 0.8623
+Successfully registered model 'fraude-h2o'.
+Created version '1' of model 'fraude-h2o'.
+
+=== Etape 4 : python src/promouvoir.py fraude-h2o ===
+version 1 promue
+
+=== Etape 5 : python src/client.py 8100 (trois series) ===
+reponse : 200 {'predictions': [{'predict': 1, 'p0': 1.2088511188834694e-05, 'p1': 0.9999879114888112}]}
+serie 1 : mediane 65.2 ms | p95  90.7 ms
+serie 2 : mediane 62.3 ms | p95 123.2 ms
+serie 3 : mediane 61.1 ms | p95  80.7 ms
+
+=== Etape 6 : python src/flaml_automl.py ===
+modele retenu : lgbm | F1 test = 0.8359
+Successfully registered model 'fraude-flaml'.
+Created version '1' of model 'fraude-flaml'.
+version 1 promue
+
+=== Etape 6 : python src/client.py 8101 (trois series) ===
+reponse : 200 {'predictions': [1]}
+serie 1 : mediane 10.8 ms | p95 16.6 ms
+serie 2 : mediane 12.1 ms | p95 14.3 ms
+serie 3 : mediane 12.3 ms | p95 13.9 ms
+
+=== Etape 7 : panne controlee ===
+H2O arrete -> python src/client.py 8101 :
+reponse : 200 {'predictions': [1]}   mediane 10.3 ms | p95 12.2 ms   (FLAML non concerne)
+
+H2O redemarre, endpoint 8100 NON relance -> POST /invocations :
+400 BAD_REQUEST
+h2o.exceptions.H2OResponseError: Server error water.exceptions.H2OKeyNotFoundArgumentException:
+  Error: Object 'StackedEnsemble_AllModels_1_AutoML_1_20261112_23749' not found in function: predict for argument: model
+
+mlflow models serve relance sur 8100 -> python src/client.py 8100 :
+reponse : 200 {'predictions': [{'predict': 1, 'p0': 1.2088511188834694e-05, 'p1': 0.9999879114888112}]}
+1re serie (a froid) : mediane 271.3 ms | p95 304.3 ms
+series suivantes    : mediane 61.7 a 64.8 ms
+
+=== Etape 8 : tailles ===
+modele H2O (mlartifacts/5/models/m-e6488c2b.../artifacts) : 5.1 Mo
+modele FLAML (models/model_flaml.pkl)                      : 43 Ko
+foret du pipeline (models/model.pkl)                        : 16.1 Mo
