@@ -92,6 +92,8 @@ FLAML est plus transparent et s'intègre directement au pipeline MLOps (Python, 
 - `tp5-fraude.knwf` : c'est une archive zip (binaire), donc des différences illisibles dans Git. On peut la suivre avec **DVC** (ou Git LFS), ou versionner le dossier du workflow exporté sans les données.
 - `models/fraude-gb.pkcls` : artefact binaire de ~320 Ko produit par l'entraînement. Il se suit avec **DVC** (TP 4), le `.dvc` allant dans Git, ou s'enregistre comme artefact d'un run MLflow avec ses métriques.
 
+Appliqué dans ce dépôt : `fraude-tp5.ows` est suivi par Git ; `tp5-fraude.knwf` et `fraude-gb.pkcls` sont suivis par DVC (`workflows/tp5-fraude.knwf.dvc`, `models/fraude-gb.pkcls.dvc`, envoyés sur le remote `local`), seuls les `.dvc` vont dans Git.
+
 Ce qui manque pour la production :
 - **Orange** s'arrête au fichier `.pkcls` : il n'y a ni API REST, ni planification, ni registre de modèles, ni suivi. Servir le modèle demande du code Python (charger le pickle dans une API FastAPI par exemple), et le pickle dépend de la version exacte d'Orange.
 - **KNIME Analytics Platform** exécute les workflows sur le poste seulement. L'exposition en service REST, la planification, la gestion des versions et la surveillance relèvent de **KNIME Business Hub**, l'offre serveur payante.
