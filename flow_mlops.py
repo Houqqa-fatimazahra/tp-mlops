@@ -1,5 +1,7 @@
-import json, subprocess, yaml
+import json, subprocess, sys, yaml
 from prefect import flow, task, get_run_logger
+sys.path.insert(0, 'src')
+from flow_xai import expliquer, controler                # garde-fou d'explicabilite (TP 8)
 
 @task(retries=2, retry_delay_seconds=10)                # 2 reessais en cas d'echec
 def rejouer_pipeline():
@@ -30,6 +32,7 @@ def reentrainement():
     rejouer_pipeline()
     mets = lire_metriques()
     valider(mets)
+    controler(expliquer('models/model.pkl', 'data/transactions.csv'))  # TP 8 : entre evaluation et notification
     notifier(mets)
 
 if __name__ == '__main__':

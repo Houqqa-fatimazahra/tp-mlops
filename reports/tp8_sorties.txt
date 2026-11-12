@@ -102,3 +102,84 @@ ecart entre groupes : {'taux_alerte': 0.0723, 'fausses_alertes': 0.0105, 'rappel
 🏃 View run xai-foret-v1 at: http://127.0.0.1:5001/#/experiments/6/runs/97704d016384404291a54eef1fc1196c
 🧪 View experiment at: http://127.0.0.1:5001/#/experiments/6
 explications et fiche modele journalisees
+===== python src/h2o_xai.py =====
+Checking whether there is an H2O instance running at http://127.0.0.1:54321. connected.
+--------------------------  -----------------------------
+H2O_cluster_uptime:         37 secs
+H2O_cluster_timezone:       Africa/Casablanca
+H2O_data_parsing_timezone:  UTC
+H2O_cluster_version:        3.46.0.12
+H2O_cluster_version_age:    3 months and 1 day
+H2O_cluster_name:           fatim
+H2O_cluster_total_nodes:    1
+H2O_cluster_free_memory:    3.938 Gb
+H2O_cluster_total_cores:    16
+H2O_cluster_allowed_cores:  16
+H2O_cluster_status:         locked, healthy
+H2O_connection_url:         http://127.0.0.1:54321
+H2O_connection_proxy:       {"http": null, "https": null}
+H2O_internal_security:      False
+Python_version:             3.13.9 final
+H2O_telemetry_server:       disabled
+H2O_telemetry_client:       disabled
+--------------------------  -----------------------------
++------------------------------------------------------------------+
+| You are running the community edition of H2O-3 OSS.              |
+|                                                                  |
+| For commercial use, H2O-3 Secure is now recommended.             |
+| This includes production support, CVE fixes, multi-node scaling, |
+| model artifact extraction, and more.                             |
+| See h2o.ai/h2o-3/oss-vs-secure for additional details.           |
+| Contact enterprise@h2o.ai to upgrade.                            |
++------------------------------------------------------------------+
+15:30:22.593: AutoML: XGBoost is not available; skipping it.
+███████████████████████████████████████████████████████████████| (done) 100%
+XGBoost indisponible sur cette plateforme : on explique le meilleur GBM
+modele explique : GBM_1_AutoML_1_20261112_153022
+  variable  scaled_importance
+   montant              1.000
+  freq_24h              0.399
+anciennete              0.340
+      nuit              0.279
+Mme Benali (log-cote) : {'montant': 4.407, 'anciennete': 1.327, 'freq_24h': -0.128, 'nuit': 3.648, 'BiasTerm': -5.846}
+P(fraude) = 0.968
+graphique ecrit
+Closing connection _sid_b96e at exit
+H2O session _sid_b96e closed.
+===== python src/flow_xai.py =====
+14:31:54.508 | INFO    | Flow run 'gracious-prawn' - Beginning flow run 'gracious-prawn' for flow 'controle-explicabilite'
+14:31:54.527 | INFO    | Flow run 'gracious-prawn' - View at http://127.0.0.1:4200/runs/flow-run/b4409d19-f7dc-40ec-92a1-eae5985257e4
+14:31:56.733 | INFO    | Task run 'expliquer-670' - Finished in state Completed()
+14:31:56.745 | INFO    | Task run 'controler-796' - importances : montant 0.586, freq_24h 0.283, anciennete 0.264, nuit 0.194
+14:31:56.747 | INFO    | Task run 'controler-796' - explications plausibles : montant en tete (44%)
+14:31:56.751 | INFO    | Task run 'controler-796' - Finished in state Completed()
+14:31:56.789 | INFO    | Flow run 'gracious-prawn' - Finished in state Completed()
+===== python src/flow_xai.py models/model_fuite.pkl data/transactions_fuite.csv =====
+14:32:08.333 | INFO    | Flow run 'unique-chicken' - Beginning flow run 'unique-chicken' for flow 'controle-explicabilite'
+14:32:08.349 | INFO    | Flow run 'unique-chicken' - View at http://127.0.0.1:4200/runs/flow-run/97514029-7360-496f-9371-e0ea2f508a94
+14:32:10.435 | INFO    | Task run 'expliquer-784' - Finished in state Completed()
+14:32:10.445 | INFO    | Task run 'controler-0ae' - importances : statut_enquete 0.754, montant 0.285, nuit 0.056, anciennete 0.046, freq_24h 0.045
+14:32:10.447 | ERROR   | Task run 'controler-0ae' - Task run failed with exception: ValueError("variables non autorisees : ['statut_enquete']")
+    raise ValueError(f'variables non autorisees : {sorted(interdites)}')
+ValueError: variables non autorisees : ['statut_enquete']
+14:32:10.493 | ERROR   | Task run 'controler-0ae' - Finished in state Failed("Task run encountered an exception ValueError: variables non autorisees : ['statut_enquete']")
+14:32:10.496 | ERROR   | Flow run 'unique-chicken' - Encountered exception during execution: ValueError("variables non autorisees : ['statut_enquete']")
+    raise ValueError(f'variables non autorisees : {sorted(interdites)}')
+ValueError: variables non autorisees : ['statut_enquete']
+14:32:10.591 | INFO    | Flow run 'unique-chicken' - Finished in state Failed("Flow run encountered an exception: ValueError: variables non autorisees : ['statut_enquete']")
+    raise ValueError(f'variables non autorisees : {sorted(interdites)}')
+ValueError: variables non autorisees : ['statut_enquete']
+===== python flow_mlops.py (flux du TP 7 + garde-fou) =====
+14:32:27.226 | INFO    | Flow run 'ethereal-raven' - Beginning flow run 'ethereal-raven' for flow 'reentrainement-fraude'
+14:32:32.070 | INFO    | Task run 'rejouer_pipeline-7ca' - 'data\transactions.csv.dvc' didn't change, skipping
+14:32:32.076 | INFO    | Task run 'rejouer_pipeline-7ca' - Finished in state Completed()
+14:32:32.088 | INFO    | Task run 'lire_metriques-8b9' - Finished in state Completed()
+14:32:32.106 | INFO    | Task run 'valider-cda' - F1 0.8636 >= 0.82 : modele accepte
+14:32:32.111 | INFO    | Task run 'valider-cda' - Finished in state Completed()
+14:32:33.823 | INFO    | Task run 'expliquer-0c3' - Finished in state Completed()
+14:32:33.833 | INFO    | Task run 'controler-469' - importances : montant 0.586, freq_24h 0.283, anciennete 0.264, nuit 0.194
+14:32:33.836 | INFO    | Task run 'controler-469' - explications plausibles : montant en tete (44%)
+14:32:33.839 | INFO    | Task run 'controler-469' - Finished in state Completed()
+14:32:33.847 | INFO    | Task run 'notifier-cf5' - NOTIFICATION equipe : nouveau modele F1=0.8636
+14:32:33.851 | INFO    | Task run 'notifier-cf5' - Finished in state Completed()
+14:32:33.898 | INFO    | Flow run 'ethereal-raven' - Finished in state Completed()
