@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fraude-api
+spec:
+  replicas: 2                           # nombre de copies souhaitees
+  selector:
+    matchLabels:
+      app: fraude-api                   # les pods geres : ceux qui portent cette etiquette
+  template:                             # modele de chaque pod
+    metadata:
+      labels:
+        app: fraude-api
+    spec:
+      containers:
+        - name: api
+          image: fraude-api:1.0         # l'image construite en partie A
+          imagePullPolicy: IfNotPresent  # image locale, pas de telechargement
+          ports:
+            - containerPort: 8000
+          lifecycle:
+            preStop:                    # avant l'arret : 5 s pour finir les requetes en cours
+              exec:
+                command: ["sleep", "5"]
+          readinessProbe:               # pas de trafic tant que /health ne repond pas
+            httpGet:
+              path: /health
+              port: 8000
+          resources:
+            requests:                   # reserve pour chaque pod
+              cpu: "100m"               # 0,1 coeur
+              memory: "256Mi"
+            limits:                     # plafond a ne pas depasser
+              cpu: "500m"
+              memory: "512Mi"

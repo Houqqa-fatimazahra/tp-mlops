@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fraude-api                      # nom utilise dans le cluster : http://fraude-api
+spec:
+  selector:
+    app: fraude-api                     # envoie le trafic aux pods qui portent cette etiquette
+  ports:
+    - port: 80                          # port du Service
+      targetPort: 8000                  # port du conteneur
