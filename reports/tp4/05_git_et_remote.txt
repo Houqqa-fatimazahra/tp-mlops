@@ -1,0 +1,22 @@
+> git log --oneline
+346da28 (HEAD -> master) TP4 : experiences et compte rendu
+e9be737 (tag: v3) pipeline DVC complet
+bacc892 (tag: v2) data: jeu de donnees v2
+4b27452 (tag: v1) chore: suivi des scripts du pipeline TP2
+d8e5c2d chore: configuration DVC
+f5b8a5f TP1 : decouverte de la boite a outils MLOps
+
+> git tag
+v1
+v2
+v3
+
+> dvc status -c
+Cache and remote 'local' are in sync.
+
+> Get-Content data/transactions.csv.dvc
+outs:
+- md5: 21e203794a21e494f757ce4d886c6265
+  size: 86374
+  hash: md5
+  path: transactions.csv

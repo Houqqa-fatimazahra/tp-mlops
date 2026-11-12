@@ -1,0 +1,14 @@
+> dvc repro --force
+Verifying data sources in stage: 'data\transactions.csv.dvc'
+
+Running stage 'preparer':
+> python src/preparer.py
+preparation : 3750 lignes train / 1250 lignes test
+
+Running stage 'entrainer':
+> python src/entrainer.py
+entrainement : modele ecrit dans models/model.pkl
+
+Running stage 'evaluer':
+> python src/evaluer.py
+evaluation : {'f1': 0.8593, 'precision': 0.876, 'recall': 0.8433}

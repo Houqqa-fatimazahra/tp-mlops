@@ -1,0 +1,7 @@
+> Get-FileHash data/transactions.csv -Algorithm MD5
+MD5   21E203794A21E494F757CE4D886C6265
+
+> Get-FileHash $env:TEMP\collegue\data\transactions.csv -Algorithm MD5
+MD5   21E203794A21E494F757CE4D886C6265
+
+=> Empreintes identiques : le clone + dvc pull restitue exactement les memes donnees.

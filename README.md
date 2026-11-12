@@ -67,12 +67,12 @@ kubectl apply -f k8s/
 
 ## Parcours TP 1 à 9
 
-Les TP 1 à 4 posent les bases (suivi, pipeline, versionnement) ; les TP 5 à 9 ont chacun un compte rendu détaillé.
+Chaque TP a son compte rendu dans [`reports/`](reports/).
 
-- **TP 1 — Découverte de la boîte à outils MLOps** : génération des données ([`donnees.py`](donnees.py)), entraînement d'une forêt aléatoire suivi dans MLflow (autolog, 5 combinaisons d'hyperparamètres) — [`src/train.py`](src/train.py), [`run_tp1.ps1`](run_tp1.ps1)
-- **TP 2 — Structurer le pipeline** : étapes préparer → entraîner → évaluer, paramètres centralisés et projet MLflow — [`src/preparer.py`](src/preparer.py), [`src/entrainer.py`](src/entrainer.py), [`src/evaluer.py`](src/evaluer.py), [`params.yaml`](params.yaml), [`MLproject`](MLproject)
-- **TP 3 — Versionner données et pipeline avec DVC** : jeu de données v2 suivi par DVC, pipeline reproductible `dvc repro` et métriques — [`dvc.yaml`](dvc.yaml), [`dvc.lock`](dvc.lock), [`reports/metrics.json`](reports/metrics.json)
-- **TP 4 — Expériences DVC** : comparaison de variantes de profondeur (meilleur F1 0,8659 à profondeur 16) — [`exp_table.txt`](exp_table.txt)
+- [TP 1 — Découvrir la boîte à outils MLOps](reports/compte-rendu-tp1.pdf) : environnement (Python, Git, MLflow, DVC), données synthétiques, 5 exécutions comparées dans MLflow, meilleur modèle enregistré avec l'alias « production » puis rechargé — [`src/train.py`](src/train.py), [`run_tp1.ps1`](run_tp1.ps1)
+- [TP 2 — Mettre en œuvre un pipeline MLOps simple](reports/compte-rendu-tp2.pdf) : préparer → entraîner → évaluer, réglages dans `params.yaml`, modèle enregistré seulement si F1 ≥ 0,82 (F1 obtenu : 0,8636), projet `MLproject` — [`pipeline.py`](pipeline.py)
+- [TP 3 — Enregistrer modèles et artefacts dans MLflow](reports/compte-rendu-tp3.pdf) : paramètres, métriques, tags (auteur, commit Git), artefacts et signature du modèle ; registre de modèles avec alias — [`src/train_complet.py`](src/train_complet.py)
+- [TP 4 — Versionner données et expérimentations avec DVC](reports/compte-rendu-tp4.md) : données v1 / v2, retour arrière code + données, pipeline `dvc.yaml` avec cache, 3 expériences comparées (meilleur F1 0,8659), clone et `dvc pull` aux empreintes MD5 identiques — [`dvc.yaml`](dvc.yaml), [sorties](reports/tp4/)
 - [TP 5 — AutoML et low-code (FLAML, Orange, KNIME)](reports/compte-rendu-tp5.md)
 - [TP 6 — AutoML H2O / FLAML et déploiement MLflow](reports/compte-rendu-tp6.md)
 - [TP 7 — Automatiser les workflows (Prefect, Node-RED)](reports/compte-rendu-tp7.md)

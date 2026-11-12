@@ -1,0 +1,15 @@
+> dvc repro
+Stage 'preparer' didn't change, skipping
+Stage 'entrainer' didn't change, skipping
+Stage 'evaluer' didn't change, skipping
+Data and pipelines are up to date.
+
+--- Declenchement cible (dvc exp run -S entrainement.max_depth=8) ---
+'data\transactions.csv.dvc' didn't change, skipping
+Stage 'preparer' didn't change, skipping
+Running stage 'entrainer':
+Running stage 'evaluer':
+
+--- Parametres deja connus (n_estimators=600, max_depth=20) ---
+Stage 'entrainer' is cached - skipping run, checking out outputs
+Stage 'evaluer' is cached - skipping run, checking out outputs
