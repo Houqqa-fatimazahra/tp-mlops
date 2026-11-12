@@ -65,8 +65,14 @@ kind load docker-image fraude-api:1.0
 kubectl apply -f k8s/
 ```
 
-## Comptes rendus
+## Parcours TP 1 à 9
 
+Les TP 1 à 4 posent les bases (suivi, pipeline, versionnement) ; les TP 5 à 9 ont chacun un compte rendu détaillé.
+
+- **TP 1 — Découverte de la boîte à outils MLOps** : génération des données ([`donnees.py`](donnees.py)), entraînement d'une forêt aléatoire suivi dans MLflow (autolog, 5 combinaisons d'hyperparamètres) — [`src/train.py`](src/train.py), [`run_tp1.ps1`](run_tp1.ps1)
+- **TP 2 — Structurer le pipeline** : étapes préparer → entraîner → évaluer, paramètres centralisés et projet MLflow — [`src/preparer.py`](src/preparer.py), [`src/entrainer.py`](src/entrainer.py), [`src/evaluer.py`](src/evaluer.py), [`params.yaml`](params.yaml), [`MLproject`](MLproject)
+- **TP 3 — Versionner données et pipeline avec DVC** : jeu de données v2 suivi par DVC, pipeline reproductible `dvc repro` et métriques — [`dvc.yaml`](dvc.yaml), [`dvc.lock`](dvc.lock), [`reports/metrics.json`](reports/metrics.json)
+- **TP 4 — Expériences DVC** : comparaison de variantes de profondeur (meilleur F1 0,8659 à profondeur 16) — [`exp_table.txt`](exp_table.txt)
 - [TP 5 — AutoML et low-code (FLAML, Orange, KNIME)](reports/compte-rendu-tp5.md)
 - [TP 6 — AutoML H2O / FLAML et déploiement MLflow](reports/compte-rendu-tp6.md)
 - [TP 7 — Automatiser les workflows (Prefect, Node-RED)](reports/compte-rendu-tp7.md)
