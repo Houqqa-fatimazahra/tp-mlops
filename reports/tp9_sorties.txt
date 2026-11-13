@@ -272,7 +272,7 @@ Forwarding from 127.0.0.1:8080 -> 8000
 Forwarding from [::1]:8080 -> 8000
 Handling connection for 8080
 Handling connection for 8080
-/c/Users/fatim/AppData/Local/Temp/claude/a9d7ce52576e7e01/f9a4c25d-e80e-442f-89c9-c96b32e3e3e3/scratchpad/etapes13_17.sh: line 30:   595 Terminated              kubectl port-forward service/fraude-api 8080:80 > $R/pf.log 2>&1
+etapes13_17.sh: line 30:   595 Terminated              kubectl port-forward service/fraude-api 8080:80 > $R/pf.log 2>&1
 
 === ETAPE 15 ===
 PS> kubectl run client --rm -i --restart=Never --image=fraude-api:1.0 -- python api/client.py 10
