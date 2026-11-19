@@ -1,0 +1,11 @@
+FROM python:3.12-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY api/ ./api/
+COPY models/ ./models/
+# FAILLE 3 : la cle est ecrite dans l'image
+ENV API_KEY=k3y-ex3mple-2026
+# FAILLE 7 : aucune instruction USER, le service tourne en root
+EXPOSE 8000
+CMD ["uvicorn", "api.main_securisee:app", "--host", "0.0.0.0", "--port", "8000"]

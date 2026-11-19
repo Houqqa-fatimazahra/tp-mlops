@@ -1,0 +1,8 @@
+.venv
+.env
+certs
+tests
+attaques
+**/__pycache__
+api/brouillon.py
+api/main_lent.py

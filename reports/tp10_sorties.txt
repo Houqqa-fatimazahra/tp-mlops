@@ -1,0 +1,294 @@
+﻿# TP10 - sorties reelles (19/11/2026, Windows 11, PowerShell 5.1, Python 3.13.9, fastapi 0.165.0, uvicorn 0.54.0, Flask 3.1.3, Docker 29.1.2)
+# La cle d'API de .env est remplacee par $CLE.
+
+=== ETAPE 2 : Flask contre FastAPI ===
+PS> python appel.py POST http://localhost:5000/predict
+200 OK
+{"fraude":true,"probabilite":0.8899}
+
+PS> python appel.py POST http://localhost:5000/predict montant=abc
+500 INTERNAL SERVER ERROR
+<!doctype html>
+<html lang=en>
+<title>500 Internal Server Error</title>
+<h1>Internal Server Error</h1>
+<p>The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.</p>
+
+PS> python appel.py POST http://localhost:8000/predict
+200 OK
+{"fraude":true,"probabilite":0.8899}
+PS> python appel.py POST http://localhost:8000/predict montant=abc
+422 Unprocessable Content
+{"detail":[{"type":"float_parsing","loc":["body","montant"],"msg":"Input should be a valid number, unable to parse string as a number","input":"abc"}]}
+
+=== ETAPE 4 : codes HTTP ===
+PS> curl.exe -sv http://localhost:8000/health
+> GET /health HTTP/1.1
+> Host: localhost:8000
+> User-Agent: curl/8.22.0
+> Accept: */*
+> 
+< HTTP/1.1 200 OK
+< date: Thu, 19 Nov 2026 16:20:15 GMT
+< server: uvicorn
+< content-length: 36
+< content-type: application/json
+< 
+{ [36 bytes data]
+{"statut":"ok","modele_charge":true}
+
+PS> python appel.py GET http://localhost:8000/health
+200 OK
+{"statut":"ok","modele_charge":true}
+PS> python appel.py GET http://localhost:8000/v1/model-info
+200 OK
+{"version_modele":"1.0.0","variables":["montant","anciennete","freq_24h","nuit"]}
+PS> python appel.py POST http://localhost:8000/v1/predict
+200 OK
+{"fraude":true,"probabilite":0.8899,"version_modele":"1.0.0","id_requete":"5bdeb08c"}
+PS> python appel.py POST http://localhost:8000/v1/predict montant=-5
+422 Unprocessable Content
+{"detail":[{"type":"greater_than","loc":["body","montant"],"msg":"Input should be greater than 0","input":-5,"ctx":{"gt":0.0}}]}
+PS> python appel.py POST http://localhost:8000/v1/predict pays=MA
+422 Unprocessable Content
+{"detail":[{"type":"extra_forbidden","loc":["body","pays"],"msg":"Extra inputs are not permitted","input":"MA"}]}
+PS> python appel.py GET http://localhost:8000/v1/predict
+405 Method Not Allowed
+{"detail":"Method Not Allowed"}
+PS> python appel.py POST http://localhost:8000/predict
+404 Not Found
+{"detail":"Not Found"}
+
+=== ETAPE 5 : tests ===
+PS> python -m pytest -q
+.....                                                                    [100%]
+5 passed in 4.62s
+
+=== ETAPE 6 : modele charge une fois / a chaque requete ===
+PS> python tests/charge.py http://127.0.0.1:8000/v1/predict 200 1
+200 requetes, 1 clients : 17 req/s, mediane 55.9 ms, p95 77.0 ms
+PS> python tests/charge.py http://127.0.0.1:8001/v1/predict 200 1
+200 requetes, 1 clients : 5 req/s, mediane 199.8 ms, p95 240.0 ms
+
+=== ETAPE 7 : 1 puis 2 processus ===
+# 1 processus : uvicorn api.main:app --port 8000
+PS> python tests/charge.py http://127.0.0.1:8000/v1/predict 400 20
+400 requetes, 20 clients : 17 req/s, mediane 1193.7 ms, p95 1448.0 ms
+# 2 processus : uvicorn api.main:app --port 8000 --workers 2
+PS> python tests/charge.py http://127.0.0.1:8000/v1/predict 400 20
+400 requetes, 20 clients : 32 req/s, mediane 613.7 ms, p95 1021.9 ms
+
+=== ETAPE 8 : brouillon et version securisee ===
+PS> $CLE = (Get-Content .env).Split("=")[1]
+PS> python appel.py GET https://localhost:8443/health
+200 OK
+{"statut":"ok","modele_charge":true}
+PS> python appel.py POST https://localhost:8443/v1/predict --cle $CLE
+200 OK
+{"fraude":true,"probabilite":0.8899,"version_modele":"1.0.0","id_requete":"88c41224"}
+PS> python appel.py POST http://localhost:8001/v1/predict --cle admin
+200 OK
+{"fraude":true,"probabilite":0.8899}
+
+=== ETAPE 9 : client via l'espion ===
+PS> python appel.py POST http://localhost:9001/v1/predict --cle admin
+200 OK
+{"fraude":true,"probabilite":0.8899}
+PS> python appel.py POST https://localhost:9443/v1/predict --cle $CLE
+200 OK
+{"fraude":true,"probabilite":0.8899,"version_modele":"1.0.0","id_requete":"27ff19d4"}
+
+=== ETAPE 9 : terminal 4, espion HTTP ===
+PS> python attaques/espion.py 9001 8001
+espion en ecoute sur 9001, relaie vers 8001
+--- client -> serveur : 287 octets ---
+POST /v1/predict HTTP/1.1
+Host: localhost:9001
+User-Agent: python-requests/2.34.2
+Accept-Encoding: gzip, deflate
+Accept: */*
+Connection: keep-alive
+X-API-Key: admin
+Content-Length: 61
+Content-Type: application/json
+
+{"montant": 1800, "anciennete": 30, "freq_24h": 4, "nuit": 1}
+
+=== ETAPE 9 : terminal 4, espion HTTPS ===
+PS> python attaques/espion.py 9443 8443
+espion en ecoute sur 9443, relaie vers 8443
+--- client -> serveur : 517 octets ---
+16 03 01 02 00 01 00 01 fc 03 03 c5 55 13 01 bf 9a ae 65 08 ac f1 e2 f3 ...
+--- client -> serveur : 80 octets ---
+14 03 03 00 01 01 17 03 03 00 45 8b 01 88 94 b1 8a 2c 25 51 e0 05 d2 33 ...
+--- client -> serveur : 369 octets ---
+17 03 03 01 19 80 70 27 75 14 09 4d 16 cc b9 9c 5c 39 81 d5 48 36 37 45 ...
+
+=== ETAPE 10 : dictionnaire, brouillon ===
+PS> python attaques/deviner_cle.py http://localhost:8001/v1/predict
+essai  1  cle=''              -> 401
+essai  2  cle='test'          -> 401
+essai  3  cle='1234'          -> 401
+essai  4  cle='123456'        -> 401
+essai  5  cle='azerty'        -> 401
+essai  6  cle='password'      -> 401
+essai  7  cle='secret'        -> 401
+essai  8  cle='api'           -> 401
+essai  9  cle='apikey'        -> 401
+essai 10  cle='cle'           -> 401
+essai 11  cle='admin'         -> 200
+CLE TROUVEE en 11 essais : 'admin'
+
+=== ETAPE 10 : dictionnaire, version securisee ===
+PS> python attaques/deviner_cle.py https://localhost:8443/v1/predict
+essai  1  cle=''              -> 401
+essai  2  cle='test'          -> 401
+essai  3  cle='1234'          -> 401
+essai  4  cle='123456'        -> 401
+essai  5  cle='azerty'        -> 401
+essai  6  cle='password'      -> 401
+essai  7  cle='secret'        -> 401
+essai  8  cle='api'           -> 401
+essai  9  cle='apikey'        -> 401
+essai 10  cle='cle'           -> 401
+essai 11  cle='admin'         -> 401
+essai 12  cle='root'          -> 401
+essai 13  cle='changeme'      -> 401
+essai 14  cle='cle-tp-2026'   -> 401
+echec : aucune des 14 cles n'a fonctionne
+
+=== ETAPE 11 : secrets ===
+PS> Select-String "CLE_API =" api\brouillon.py, api\main_securisee.py
+api\brouillon.py:13:CLE_API = "admin"                                # FAILLES 2 et 3 : cle faible, ecrite dans le code
+api\main_securisee.py:15:CLE_API = os.environ["API_KEY"]                       # secret lu dans l'environnement
+PS> docker build -f Dockerfile.mauvais -t fraude-api:mauvais .
+#11 naming to docker.io/library/fraude-api:mauvais done
+ [33m1 warning found (use docker --debug to expand):
+[0m - SecretsUsedInArgOrEnv: Do not use ARG or ENV instructions for sensitive data (ENV "API_KEY") (line 8)
+PS> docker history --no-trunc fraude-api:mauvais | Select-String API_KEY
+<missing>   About a minute ago   ENV API_KEY=k3y-ex3mple-2026   0B   buildkit.dockerfile.v0
+PS> docker run --rm fraude-api:mauvais printenv API_KEY
+k3y-ex3mple-2026
+PS> docker history --no-trunc fraude-api:securisee | Select-String API_KEY
+PS> docker run --rm fraude-api:securisee printenv API_KEY
+(exit code 1 : aucune cle dans l'image securisee)
+
+=== ETAPE 12 : entrees piegees ===
+PS> python attaques/entrees_piegees.py http://localhost:8001/v1/predict admin
+montant negatif      -> 200  {"fraude":false,"probabilite":0.0011}
+nuit = 7             -> 200  {"fraude":true,"probabilite":0.8899}
+montant gigantesque  -> 500  Traceback (most recent call last):   File "C:\Users\fati
+champ en plus        -> 200  {"fraude":true,"probabilite":0.8899}
+montant texte        -> 500  Traceback (most recent call last):   File "C:\Users\fati
+champ manquant       -> 500  Traceback (most recent call last):   File "C:\Users\fati
+
+PS> python attaques/entrees_piegees.py https://localhost:8443/v1/predict $CLE
+montant negatif      -> 422  {"detail":[{"type":"greater_than","loc":["body","montant
+nuit = 7             -> 422  {"detail":[{"type":"less_than_equal","loc":["body","nuit
+montant gigantesque  -> 422  {"detail":[{"type":"less_than_equal","loc":["body","mont
+champ en plus        -> 422  {"detail":[{"type":"extra_forbidden","loc":["body","role
+montant texte        -> 422  {"detail":[{"type":"float_parsing","loc":["body","montan
+champ manquant       -> 422  {"detail":[{"type":"missing","loc":["body","nuit"],"msg"
+
+=== ETAPE 13 : inonder ===
+PS> python attaques/inonder.py http://localhost:8001/v1/predict admin 100
+100 requetes en 7.3 s
+  HTTP 200 : 100
+PS> python attaques/inonder.py https://localhost:8443/v1/predict $CLE 100
+100 requetes en 6.2 s
+  HTTP 200 : 60
+  HTTP 429 : 40
+PS> python appel.py POST https://localhost:8443/v1/predict --cle $CLE
+429 Too Many Requests
+{"detail":"trop de requetes, reessayez dans une minute"}
+
+=== ETAPE 14 : erreurs (1er passage) ===
+PS> python attaques/provoquer_erreur.py http://localhost:8001/v1/predict admin
+HTTP 500 - 5182 caracteres de reponse
+chemin et ligne du code : File "C:\Users\fatim\tp-mlops\tp10-api\api\brouillon.py", line 22, in predict
+instruction fautive     : p = float(modele.predict_proba(X)[0, 1])
+bibliotheques visibles  : anyio, fastapi, pandas, sklearn, starlette
+derniere ligne          : ValueError: could not convert string to float: 'abc'
+
+PS> python attaques/provoquer_erreur.py https://localhost:8443/v1/predict $CLE
+HTTP 429 - 56 caracteres de reponse
+reponse                 : {"detail":"trop de requetes, reessayez dans une minute"}
+
+PS> (Get-Content api\brouillon.py) -replace 'debug=True', 'debug=False' | Set-Content -Encoding ascii api\brouillon.py
+# terminal 1 : Ctrl+C puis uvicorn api.brouillon:app --port 8001
+PS> python attaques/provoquer_erreur.py http://localhost:8001/v1/predict admin
+HTTP 500 - 21 caracteres de reponse
+reponse                 : Internal Server Error
+
+=== ETAPE 14 : version securisee rejouee apres redemarrage (compteur 429 remis a zero) ===
+PS> python attaques/provoquer_erreur.py https://localhost:8443/v1/predict $CLE
+HTTP 422 - 151 caracteres de reponse
+reponse                 : {"detail":[{"type":"float_parsing","loc":["body","montant"],"msg":"Input should be a valid number, unable to parse string as a number","input":"abc"}]
+
+=== ETAPE 15 : conteneurs ===
+PS> docker run -d --name mauvais -p 8081:8000 fraude-api:mauvais
+a6e67ecc526a0d15c7c38b12ad6d62007df0022aec73b7448b4aab5d6cb70f5a
+PS> docker run -d --name securisee -p 8082:8000 --env-file .env fraude-api:securisee
+5a37feffca93b24d8c1a7d860beba7fe314dee5364affca482037405f99009fb
+PS> python appel.py POST http://localhost:8082/v1/predict --cle $CLE
+200 OK
+{"fraude":true,"probabilite":0.8899,"version_modele":"1.0.0","id_requete":"393fd8c4"}
+PS> docker exec mauvais whoami
+root
+PS> docker exec mauvais touch models/modele_pirate.pkl
+PS> docker exec mauvais ls -l models
+total 7956
+-rwxr-xr-x 1 root root 8145225 Nov 12 14:23 model.pkl
+-rw-r--r-- 1 root root       0 Nov 19 16:48 modele_pirate.pkl
+PS> docker exec securisee whoami
+app
+PS> docker exec securisee touch models/modele_pirate.pkl
+touch: cannot touch 'models/modele_pirate.pkl': Permission denied
+PS> docker exec securisee ls -l models
+total 7956
+-rwxr-xr-x 1 root root 8145225 Nov 12 14:23 model.pkl
+
+=== ETAPE 16 : journaux ===
+# Terminal 1 (brouillon) - extrait
+2026-11-19 16:30:52,838 INFO cle=admin donnees={'montant': 1800, 'anciennete': 30, 'freq_24h': 4, 'nuit': 1}
+2026-11-19 16:30:58,926 INFO cle=admin donnees={'montant': 1800, 'anciennete': 30, 'freq_24h': 4, 'nuit': 1}
+2026-11-19 16:31:30,770 INFO cle=admin donnees={'montant': 1800, 'anciennete': 30, 'freq_24h': 4, 'nuit': 1}
+2026-11-19 16:32:03,303 INFO cle=admin donnees={'montant': -5000, 'anciennete': 30, 'freq_24h': 4, 'nuit': 1}
+INFO:     127.0.0.1:58072 - "POST /v1/predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58076 - "POST /v1/predict HTTP/1.1" 200 OK
+
+# Terminal 2 (version securisee) - extrait
+2026-11-19 16:30:49,973 INFO prediction id=88c41224 version=1.0.0 proba=0.8899 duree_ms=89.2
+2026-11-19 16:31:06,158 INFO prediction id=27ff19d4 version=1.0.0 proba=0.8899 duree_ms=33.8
+2026-11-19 16:34:56,216 INFO prediction id=bfb08082 version=1.0.0 proba=0.8899 duree_ms=70.9
+INFO:     127.0.0.1:55937 - "POST /v1/predict HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:55010 - "POST /v1/predict HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:58013 - "POST /v1/predict HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:58015 - "POST /v1/predict HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:63942 - "POST /v1/predict HTTP/1.1" 429 Too Many Requests
+INFO:     127.0.0.1:63942 - "POST /v1/predict HTTP/1.1" 429 Too Many Requests
+
+=== ETAPE 17 : nettoyage ===
+PS> docker rm -f mauvais securisee
+mauvais
+securisee
+PS> docker rmi fraude-api:mauvais
+Untagged: fraude-api:mauvais
+
+=== Terminal 1 : uvicorn api.main:app --port 8000 --workers 2 ===
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started parent process [40784]
+INFO:     Started server process [10316]
+INFO:     Waiting for application startup.
+INFO:     Started server process [15280]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Application startup complete.
+
+=== Terminal 1 : Flask (etape 2) ===
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://127.0.0.1:5000
+127.0.0.1 - - [19/Nov/2026 16:19:20] "POST /predict HTTP/1.1" 200 -
+[2026-11-19 16:19:23,248] ERROR in app: Exception on /predict [POST]
+ValueError: could not convert string to float: 'abc'
+127.0.0.1 - - [19/Nov/2026 16:19:23] "POST /predict HTTP/1.1" 500 -
